@@ -2,14 +2,11 @@ package com.carrotcreative.swap.applications;
 
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 
+import com.carrotcreative.swap.base.IntentUpdater;
 import com.carrotcreative.swap.base.SwapApplication;
 import com.carrotcreative.swap.base.SwapException;
 
-/**
- *  From: https://dev.twitter.com/docs/intents
- */
 public class Twitter extends SwapApplication{
 
     // ========== Singleton ==========
@@ -37,63 +34,23 @@ public class Twitter extends SwapApplication{
     private static final String STATUS_ID = "status_id";
     private static final String SCREEN_NAME = "screen_name";
     private static final String USER_ID = "user_id";
-    private static final String IN_REPLY_TO = "in_reply_to";
-    private static final String TWEET_ID = "tweet_id";
     private static final String TEXT = "text";
 
     // ========== Intents ==========
 
-    private static final String INTENT_VIEW_TWEET = "twitter://status?" + STATUS_ID + "=" + param(STATUS_ID);
-    private static final String INTENT_VIEW_USER_FROM_SCREEN_NAME = "twitter://user?" + SCREEN_NAME + "=" + param(SCREEN_NAME);
-    private static final String INTENT_VIEW_USER_FROM_USER_ID = "twitter://user?" + USER_ID + "=" + param(USER_ID);
-    private static final String INTENT_REPLY = "twitter://tweet?" + IN_REPLY_TO + "=" + param(IN_REPLY_TO);
-    private static final String INTENT_RETWEET = "twitter://retweet?" + TWEET_ID + "=" + param(TWEET_ID);
-    private static final String INTENT_FAVORITE = "twitter://favorite?" + TWEET_ID + "=" + param(TWEET_ID);
-    private static final String INTENT_TWEET = "twitter://tweet?" + TEXT + "=" + param(TEXT);
+    private static final String BASE_NATIVE_URI = "twitter://";
+    private static final String BASE_WEB_URI = "https://twitter.com/intent/";
 
-    // ========== Languages ==========
-
-    public static final String LANGUAGE_APPEND = "&" + LANGUAGE + "=" + param(LANGUAGE);
-
-    public static final String LANG_ENGLISH = "en";
-    public static final String LANG_ITALIAN = "it";
-    public static final String LANG_SPANISH = "es";
-    public static final String LANG_FRENCH = "fr";
-    public static final String LANG_KOREAN = "ko";
-    public static final String LANG_JAPANESE = "ja";
+    private static final String INTENT_VIEW_TWEET = BASE_NATIVE_URI + "status?" + STATUS_ID + "=" + param(STATUS_ID);
+    private static final String INTENT_VIEW_USER_FROM_SCREEN_NAME = BASE_NATIVE_URI + "user?" + SCREEN_NAME + "=" + param(SCREEN_NAME);
+    private static final String INTENT_VIEW_USER_FROM_USER_ID = BASE_NATIVE_URI + "user?" + USER_ID + "=" + param(USER_ID);
+    private static final String INTENT_TWEET = BASE_WEB_URI + "tweet?" + TEXT + "=" + param(TEXT);
 
     // ========== Class ==========
-
-    private Context mContext;
-    public boolean mLanguageIsSet;
-    public String mActiveLanguage;
 
     private Twitter(Context context)
     {
         mContext = context;
-        mLanguageIsSet = false;
-    }
-
-    /**
-     * Set the language and adds the lang param to every
-     * method call after this one.
-     *
-     * @param language One of the strings in this class
-     *               that starts with LANG_
-     */
-    public void setLanguage(String language)
-    {
-        mLanguageIsSet = true;
-        mActiveLanguage = language;
-    }
-
-    /**
-     * This disables any language that was previously set
-     */
-    public void clearLanguage()
-    {
-        mLanguageIsSet = false;
-        mActiveLanguage = null;
     }
 
     @Override
@@ -111,26 +68,62 @@ public class Twitter extends SwapApplication{
      */
     public void viewTweet(String statusID) throws SwapException
     {
-        if(isInstalled(mContext))
-        {
-            String uri = INTENT_VIEW_TWEET;
-            uri = uri.replace(param(STATUS_ID), statusID);
-            if (mLanguageIsSet) uri = applyLanguage(uri);
+        // Preparing URI
+        String uri = INTENT_VIEW_TWEET;
+        uri = uri.replace(param(STATUS_ID), statusID);
 
-            Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-            mContext.startActivity(i);
-        }
-        else
-        {
-            throw new SwapException(SwapException.APPLICATION_NOT_INSTALLED);
-        }
+        // Starting Twitter Activity
+        swap(uri, null);
     }
 
-    // ========== Helper ==========
-
-    public String applyLanguage(String uri)
+    /**
+     * Views a specific user
+     *
+     * @param screenName The users twitter handle
+     */
+    public void viewUserFromScreenName(String screenName) throws SwapException
     {
-        return uri + LANGUAGE_APPEND.replace(param(LANGUAGE), mActiveLanguage);
+        // Preparing URI
+        String uri = INTENT_VIEW_USER_FROM_SCREEN_NAME;
+        uri = uri.replace(param(SCREEN_NAME), screenName);
+
+        // Starting Twitter Activity
+        swap(uri, null);
+    }
+
+    /**
+     * Views a specific user
+     *
+     * @param userID The user's unique ID
+     */
+    public void viewUserFromUserID(String userID) throws SwapException
+    {
+        // Preparing URI
+        String uri = INTENT_VIEW_USER_FROM_USER_ID;
+        uri = uri.replace(param(USER_ID), userID);
+
+        // Starting Twitter Activity
+        swap(uri, null);
+    }
+
+    /**
+     * Opens the app to make a new tweet
+     *
+     * @param text The start text
+     */
+    public void tweet(String text) throws SwapException
+    {
+        // Preparing URI
+        String uri = INTENT_TWEET;
+        uri = uri.replace(param(TEXT), text);
+
+        // Starting Twitter Activity
+        swap(uri, new IntentUpdater() {
+            @Override
+            public void updateIntent(Intent i) {
+                i.setPackage(TWITTER_BASE_PACKAGE);
+            }
+        });
     }
 
 }
