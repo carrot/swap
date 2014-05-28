@@ -10,10 +10,10 @@ public abstract class SwapApplication {
 
     protected Context mContext;
 
-    public boolean isInstalled(Context context)
+    public boolean isInstalled()
     {
         try{
-            PackageManager pm = context.getPackageManager();
+            PackageManager pm = mContext.getPackageManager();
             assert pm != null;
 
             // This function throws the NameNotFoundException
@@ -34,7 +34,7 @@ public abstract class SwapApplication {
         uri = updateUriBeforeSwap(uri);
 
         // Checking if installed
-        if(!isInstalled(mContext))
+        if(!isInstalled())
             throw new SwapException(SwapException.APPLICATION_NOT_INSTALLED);
 
         // Sending off the intent
