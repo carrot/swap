@@ -1,29 +1,31 @@
-apply plugin: 'android-library'
+apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 19
-    buildToolsVersion "19.0.3"
+    compileSdkVersion 23
+    buildToolsVersion "23.0.1"
 
-    defaultConfig {
-        minSdkVersion 8
-        targetSdkVersion 19
+    defaultConfig{
+        minSdkVersion 14
+        targetSdkVersion 23
         versionCode 1
         versionName "1.0"
     }
+
     buildTypes {
         release {
-            runProguard false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.9'
+    gradleVersion = '2.4'
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:19.+'
+    compile 'com.android.support:appcompat-v7:23.1.0'
     compile fileTree(dir: 'libs', include: ['*.jar'])
 }
 
